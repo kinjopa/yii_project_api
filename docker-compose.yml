@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend
+    ports:
+      - 20080:80
+    restart: always
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+
+  backend:
+    build: backend
+    ports:
+      - 21080:80
+    restart: always
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+    depends_on:
+      - pgsql
+    links:
+      - pgsql
+
+  api:
+    build: api
+    ports:
+      - 22080:80
+    restart: always
+    volumes:
+      - ~/.composer-docker/cache:/root/.composer/cache:delegated
+    depends_on:
+      - pgsql
+    links:
+      - pgsql
+
+  pgsql:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=my_db
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+    volumes:
+      - ./postgres_data:/postgresql/data
+    container_name: postgres_db
+    restart: always
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: habrpguser@habr.com
+      PGADMIN_DEFAULT_PASSWORD: root
+    volumes:
+      - ./pgadmin:/pgadmin
+    ports:
+      - "5050:80"
+
+
+
+
